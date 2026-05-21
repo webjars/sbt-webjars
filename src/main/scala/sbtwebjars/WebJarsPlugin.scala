@@ -91,6 +91,23 @@ object WebJarsPlugin extends AutoPlugin {
        |
        |  def localUrl(a: Artifact, path: String): String =
        |    s"/webjars/$${a.name}/$${a.version}/$$path"
+       |
+       |  /** Auto-picks `localUrl` when the WebJar's JAR is on the runtime
+       |    * classpath (i.e. it was included in `Test`/`Compile`-visible
+       |    * scopes), otherwise falls back to `cdnUrl`.
+       |    *
+       |    * The same fact — "is the WebJar bundled?" — that determines
+       |    * whether the consumer registers a `/webjars/` static-asset
+       |    * route also determines which URL the page should emit. So one
+       |    * classpath check at startup time is enough to make the dev/prod
+       |    * split work without an extra config flag.
+       |    *
+       |    * Use `cdnUrl` / `localUrl` directly if you need explicit
+       |    * control (e.g. forcing CDN in dev, or a non-default mount). */
+       |  def url(a: Artifact, path: String): String =
+       |    val resource = s"META-INF/resources/webjars/$${a.name}/$${a.version}/$$path"
+       |    if getClass.getClassLoader.getResource(resource) != null then localUrl(a, path)
+       |    else cdnUrl(a, path)
        |""".stripMargin
   }
 }
