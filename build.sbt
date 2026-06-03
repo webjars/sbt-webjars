@@ -2,7 +2,7 @@ sbtPlugin   := true
 name        := "sbt-webjars"
 organization := "org.webjars"
 
-scalaVersion := "2.12.20"
+scalaVersion := "3.8.4"
 
 licenses := Seq("MIT License" -> url("https://opensource.org/licenses/MIT"))
 
