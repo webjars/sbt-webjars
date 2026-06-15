@@ -27,3 +27,11 @@ developers := List(
 )
 
 ThisBuild / versionScheme := Some("semver-spec")
+
+addSbtPlugin("com.github.sbt" % "sbt2-compat" % "0.1.0")
+
+javacOptions ++= Seq("-source", "17", "-target", "17")
+scalacOptions ++= (scalaBinaryVersion.value match {
+  case "2.12" => Seq.empty // Scala 2.12 cannot target > JDK 8
+  case _      => Seq("-release", "17")
+})
