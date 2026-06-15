@@ -1,0 +1,8 @@
+# Compile triggers the WebJars source generator
+> compile
+
+# Verify the generated locator content
+> check
+
+# Run the generated API at runtime: localUrl for bundled, cdnUrl for non-bundled
+> runMain example.Main

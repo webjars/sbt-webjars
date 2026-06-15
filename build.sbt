@@ -1,4 +1,4 @@
-sbtPlugin   := true
+enablePlugins(SbtPlugin)
 name        := "sbt-webjars"
 organization := "org.webjars"
 
@@ -35,3 +35,6 @@ scalacOptions ++= (scalaBinaryVersion.value match {
   case "2.12" => Seq.empty // Scala 2.12 cannot target > JDK 8
   case _      => Seq("-release", "17")
 })
+
+scriptedLaunchOpts ++= Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+scriptedBufferLog := false
