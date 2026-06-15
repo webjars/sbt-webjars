@@ -18,7 +18,7 @@ jobs:
 
       - run: |
           ./sbt +test
-          ./sbt +ci-release
+          ./sbt ci-release
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
