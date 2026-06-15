@@ -26,7 +26,7 @@ object WebJarsPlugin extends AutoPlugin {
 
     val webJarsPackage  = settingKey[String](
       "Package for the generated WebJars locator")
-    val webJarsGenerate = taskKey[Seq[File]](
+    @transient val webJarsGenerate = taskKey[Seq[File]](
       "Generate a type-safe Scala locator for the WebJar-scoped deps")
 
     /**
@@ -43,7 +43,7 @@ object WebJarsPlugin extends AutoPlugin {
 
   override def projectConfigurations: Seq[Configuration] = Seq(WebJar)
 
-  override def projectSettings: Seq[Setting[_]] =
+  override def projectSettings: Seq[Setting[?]] =
     inConfig(WebJar)(Defaults.configSettings) ++ Seq(
       ivyConfigurations += WebJar,
       webJarsPackage    := "webjars.generated",
