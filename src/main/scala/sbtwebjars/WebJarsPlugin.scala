@@ -62,10 +62,21 @@ object WebJarsPlugin extends AutoPlugin {
           .distinct
           .sortBy { case (g, a, _) => (g, a) }
 
-        IO.createDirectory(outDir)
-        val file = outDir / "WebJars.scala"
-        IO.write(file, render(pkg, entries))
-        log.info(s"[webjars] generated $file with ${entries.size} entries")
+        val file     = outDir / "WebJars.scala"
+        val rendered = render(pkg, entries)
+
+        // Only write when content differs. This keeps the file's mtime
+        // stable on no-op re-generates, which lets Zinc skip recompiling
+        // it. Self-invalidating: any change to `entries`, `pkg`, or the
+        // `render` template produces different content and triggers a
+        // rewrite, so no separate cache state is needed.
+        if (!file.exists || IO.read(file) != rendered) {
+          IO.createDirectory(outDir)
+          IO.write(file, rendered)
+          log.info(s"[webjars] generated $file with ${entries.size} entries")
+        } else {
+          log.debug(s"[webjars] up-to-date $file (${entries.size} entries)")
+        }
         Seq(file)
       },
 

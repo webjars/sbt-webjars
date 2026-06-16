@@ -6,3 +6,8 @@
 
 # Run the generated API at runtime: localUrl for bundled, cdnUrl for non-bundled
 > runMain example.Main
+
+# Record the locator's mtime, then re-run the generator and assert it
+# left the file untouched (no rewrite when entries didn't change).
+> recordWebJarsMtime
+> checkWebJarsUntouched
