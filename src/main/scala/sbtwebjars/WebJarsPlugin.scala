@@ -3,6 +3,11 @@ package sbtwebjars
 import sbt._
 import sbt.Keys._
 import sbt.librarymanagement.ConfigRef
+// sbt2-compat adds `Def.uncached(...)` to sbt 1.x as a no-op (identity)
+// implicit, while sbt 2.x has it natively as the action-cache opt-out.
+// Importing it unconditionally makes the cross-build's `Def.uncached`
+// call below resolve in either world.
+import sbtcompat.PluginCompat._
 
 /**
  * Adds a hidden `webjar` Ivy configuration for WebJar dependencies and
@@ -48,7 +53,24 @@ object WebJarsPlugin extends AutoPlugin {
       ivyConfigurations += WebJar,
       webJarsPackage    := "webjars.generated",
 
-      webJarsGenerate := {
+      // `Def.uncached` forces the body to run on every invocation. Under
+      // sbt 2.x's default action cache, a task whose body is a side
+      // effect (writing the locator file to disk) gets memoized by its
+      // typed inputs. The cache stores the returned `Seq[File]` but does
+      // not put the locator file into the CAS (no `Def.declareOutput`),
+      // so a later cache hit returns a `Seq[File]` referencing a file
+      // that may not be on disk anymore (between sbt sessions, after a
+      // partial `clean`, etc.). When the user's compile then runs
+      // against that stale list, scalac reports `Not found: webjars`
+      // for every consumer of the locator -- and sbt 2.x caches that
+      // compile *failure* against the same input digest, so subsequent
+      // compiles keep replaying the cached failure even though the
+      // generator could regenerate the file. Always re-running the body
+      // costs an `IO.read(file)` plus `entries.size`-time render, which
+      // is cheap and bounded by the number of WebJar deps. The body
+      // still skips the actual write when content matches, so Zinc's
+      // mtime-based incremental compile is unaffected.
+      webJarsGenerate := Def.uncached {
         val log    = streams.value.log
         val pkg    = webJarsPackage.value
         val outDir = (Compile / sourceManaged).value / "webjars"

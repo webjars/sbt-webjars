@@ -1,0 +1,26 @@
+# First compile: WebJars.scala generated, content correct.
+> compile
+> checkExists
+> checkContentMatches
+
+# Now invoke webJarsGenerate by itself a few times to populate the cache.
+> invokeGen
+> invokeGen
+
+# Delete the generated source out from under sbt.
+> deleteWebJars
+> checkNotExists
+
+# Direct invocation of the generator (bypasses compile). If the action
+# cache memoizes the result and skips the body without restoring the
+# file from CAS, this leaves the file absent. Verify the file is back.
+> invokeGen
+> checkExists
+> checkContentMatches
+
+# Same flow but via compile -- the compile path is what fails in the wild.
+> deleteWebJars
+> checkNotExists
+> compile
+> checkExists
+> checkContentMatches
