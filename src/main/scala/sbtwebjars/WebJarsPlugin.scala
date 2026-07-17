@@ -84,26 +84,46 @@ object WebJarsPlugin extends AutoPlugin {
           .distinct
           .sortBy { case (g, a, _) => (g, a) }
 
-        val file     = outDir / "WebJars.scala"
-        val rendered = render(pkg, entries)
+        val file = outDir / "WebJars.scala"
 
-        // Only write when content differs. This keeps the file's mtime
-        // stable on no-op re-generates, which lets Zinc skip recompiling
-        // it. Self-invalidating: any change to `entries`, `pkg`, or the
-        // `render` template produces different content and triggers a
-        // rewrite, so no separate cache state is needed.
-        if (!file.exists || IO.read(file) != rendered) {
-          IO.createDirectory(outDir)
-          IO.write(file, rendered)
-          log.info(s"[webjars] generated $file with ${entries.size} entries")
+        if (entries.isEmpty) {
+          // No WebJar-scoped dependencies: don't generate a locator at
+          // all (an empty enum wouldn't compile anyway). Delete any
+          // stale file from a previous run where deps existed.
+          if (file.exists) {
+            IO.delete(file)
+            log.info(s"[webjars] removed $file (no WebJar dependencies)")
+          }
+          Seq.empty
         } else {
-          log.debug(s"[webjars] up-to-date $file (${entries.size} entries)")
+          generate(file, outDir, render(pkg, entries), entries.size, log)
         }
-        Seq(file)
       },
 
       Compile / sourceGenerators += webJarsGenerate.taskValue,
     )
+
+  private def generate(
+      file: File,
+      outDir: File,
+      rendered: String,
+      entryCount: Int,
+      log: Logger,
+  ): Seq[File] = {
+    // Only write when content differs. This keeps the file's mtime
+    // stable on no-op re-generates, which lets Zinc skip recompiling
+    // it. Self-invalidating: any change to `entries`, `pkg`, or the
+    // `render` template produces different content and triggers a
+    // rewrite, so no separate cache state is needed.
+    if (!file.exists || IO.read(file) != rendered) {
+      IO.createDirectory(outDir)
+      IO.write(file, rendered)
+      log.info(s"[webjars] generated $file with $entryCount entries")
+    } else {
+      log.debug(s"[webjars] up-to-date $file ($entryCount entries)")
+    }
+    Seq(file)
+  }
 
   private def render(pkg: String, entries: Seq[(String, String, String)]): String = {
     val cases = entries.map { case (g, a, v) =>
