@@ -1,0 +1,9 @@
+# With no WebJar-scoped deps, compile succeeds and generates nothing.
+> compile
+> checkNoGeneratedSources
+
+# A stale locator left over from a previous run (when WebJar deps existed)
+# is cleaned up by the generator instead of being compiled.
+> seedStaleWebJars
+> compile
+> checkNoGeneratedSources
