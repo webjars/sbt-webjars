@@ -2,7 +2,7 @@ enablePlugins(SbtPlugin)
 name        := "sbt-webjars"
 organization := "org.webjars"
 
-scalaVersion := "2.12.20"
+scalaVersion := "3.9.0"
 
 crossScalaVersions := Seq("2.12.20", "3.8.4")
 
