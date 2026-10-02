@@ -38,3 +38,13 @@ scalacOptions ++= (scalaBinaryVersion.value match {
 
 scriptedLaunchOpts ++= Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
 scriptedBufferLog := false
+
+// sbt-mcp (loopback-only: its tools can execute build tasks)
+Global / mcpEnabled := true
+Global / mcpHost := "127.0.0.1"
+Global / mcpPort := 5114
+
+// SkillsJars: extract agent Skills with `./sbt extractSkillsJars`
+skillsJarsOutputDir := Some(file(".kiro/skills"))
+
+libraryDependencies += "com.jamesward" % "skills" % "0.0.10" % Skills
