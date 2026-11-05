@@ -10,3 +10,15 @@
 
 - sbt plugin, cross-built for sbt 1 (Scala 2.12) and sbt 2 (Scala 3). Full validation, the same as CI: `./sbta '+compile; +scripted'`.
 - Use `+scripted`, not `scripted`: plain `scripted` only runs the sbt 1 test (`simple`); `no-webjars` and `sbt2-regen` pin sbt 2 and are skipped without the `+`.
+
+## Supported sbt versions
+
+This plugin supports sbt 1 and sbt 2 and keeps both: most builds that use it are still on sbt 1, and an sbt 2-only plugin can't be added to them.
+
+`pluginCrossBuild / sbtVersion` in `build.sbt` sets the sbt each published artifact compiles against, which is the oldest sbt its users can run (zen-of-projects "sbt Plugin Projects"). These are floors, not dependencies: the maintenance routine leaves them alone.
+
+- **sbt 1 (Scala 2.12): `1.13.1`.** The version it was compiled against when the floors were recorded (2026-11-04). It hasn't been tested against an older sbt 1, so it isn't lowered.
+- **sbt 2 (Scala 3): `2.0.0`**, the first sbt 2 release, so every sbt 2 user can use it.
+
+Raise a floor only when the plugin needs an API the floor lacks: say which in the PR, label it `needs-human` (it drops users on older sbt), and update this section.
+
